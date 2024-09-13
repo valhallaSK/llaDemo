@@ -11,7 +11,7 @@ train_dataset = train_test_split['train']
 eval_dataset = train_test_split['test']
 
 # 加载预训练的 LLaMA 3.1 模型和分词器
-model_name = "meta-llama/Meta-Llama-3.1-8B-Instruct"
+model_name = "/openbayes/input/input0"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = LlamaForCausalLM.from_pretrained(model_name, load_in_4bit=True, device_map="auto")
 
@@ -34,11 +34,10 @@ tokenized_eval = eval_dataset.map(preprocess_function, batched=True)
 # 配置 LoRA 参数
 lora_config = LoraConfig(
     r=16,  
-    lora_alpha=64,  
+    lora_alpha=32,  
     target_modules=["q_proj", "v_proj", "k_proj"], 
     lora_dropout=0.15, 
     task_type="CAUSAL_LM"  
-
 )
 
 # 使用 LoRA 配置微调 LLaMA 3.1
@@ -50,10 +49,10 @@ training_args = TrainingArguments(
     per_device_eval_batch_size=4,
     evaluation_strategy="epoch",
     logging_steps=10,  
-    num_train_epochs=5,  
+    num_train_epochs=50,  
     save_steps=50,
-    learning_rate=1e-5, 
-    weight_decay=0.05,  # 权重衰减，用于防止过拟合
+    learning_rate=5e-5, 
+    weight_decay=0.01,  # 权重衰减，用于防止过拟合
     save_total_limit=2, 
     fp16=True, 
     push_to_hub=False  # 不推送到 Hugging Face Hub
